@@ -7,7 +7,7 @@ require 'jwt'
 module Doorkeeper
 	module JWTAssertion
 		
-		attr_reader :jwt
+		attr_reader :jwt, :jwt_header
 
 	end
 end
@@ -22,6 +22,10 @@ module Doorkeeper
 			context.instance_variable_set('@jwt', jwt)
 		end
 
+		def jwt_header=(jwt_header)
+			@jwt_header = jwt_header
+			context.instance_variable_set('@jwt_header', jwt_header)
+		end
 
 	end
 end
@@ -30,6 +34,7 @@ module Doorkeeper
 	class Config
 
 		option :jwt_key
+		option :jwt_use_issuer_as_client_id, :default => true
 
 		class Builder
 
@@ -48,10 +53,10 @@ module Doorkeeper
 
 					Config.class_eval do
 						alias_method :remember_calculate_token_grant_types, :calculate_token_grant_types
-
 						define_method :calculate_token_grant_types do
-							remember_calculate_token_grant_types << 'assertion'
+							remember_calculate_token_grant_types << 'assertion' << 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 						end
+
 					end
 
 					jwt_key key
